@@ -16,3 +16,7 @@ dist/
 # Temporary files
 tmp/
 output_data/
+
+# Downloaded model artifacts
+models/*.pt
+models/**/*.pt

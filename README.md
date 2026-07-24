@@ -188,6 +188,32 @@ ros2 topic pub --once /tum_tb_perception/detector_trigger std_msgs/msg/Bool "{'d
 ```
 The estimated task board and component poses will be published on the `/tum_tb_perception/object_poses` topic.
 
+### Visual Verification in RViz2
+
+To visually inspect the output of the perception pipeline, you can use RViz2.
+
+**Note on TF Frames:** By default, the `pose_estimator` attempts to publish poses relative to the `base` frame of your robot. If you are testing the camera in isolation without a robot running, the TF lookup for `base` will fail, and no 3D markers will be published. In this case, you must launch the pose estimator with the camera's optical frame as the desired reference frame:
+```bash
+ros2 launch tum_tb_perception pose_estimator.launch.py desired_reference_frame:=camera_color_optical_frame
+```
+
+Once the nodes are running and triggered, open a new terminal and start RViz2:
+```bash
+rviz2
+```
+
+Configure your RViz2 workspace with the following displays to see the output:
+1. **Global Options > Fixed Frame:** Set to `camera_color_optical_frame` (or your robot's base frame if connected).
+2. **Image:** Add an Image display and subscribe to `/tum_tb_perception/detection_images` (shows 2D CNN bounding boxes overlaid on the camera feed).
+3. **PointCloud2:** Add a PointCloud2 display and subscribe to `/camera/camera/depth/color/points` (shows raw depth data).
+4. **MarkerArray:** Add a MarkerArray display and subscribe to `/tum_tb_perception/object_markers` (shows 3D spheres indicating object positions and text labels).
+5. **TF:** Add a TF display to see the estimated `taskboard_frame` coordinate system. To prevent the axes from cluttering the view, expand the TF display properties in the left panel and change the **Marker Scale** to `0.2`.
+
+**Tip:** Once configured, you can save your setup via **File -> Save Config As...** into your package's config directory (e.g., `config/perception.rviz`). You can automatically load it in the future by launching RViz with the config file:
+```bash
+rviz2 -d src/tum-tb-perception/config/perception.rviz
+```
+
 <!-- Add custom ROS message specifications -->
 
 To estimate the solution for the slider task, position the camera above the LCD screen (see, for example, the perspective shown on the illustrative image of the screen [above](#example-results)).

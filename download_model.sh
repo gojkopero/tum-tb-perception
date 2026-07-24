@@ -7,7 +7,7 @@ set -e
 ## ==============================================================================================================
 
 model_dir_path="./models"
-model_url="https://syncandshare.lrz.de/dl/fi8T5K7jJcUw2kKS1NL94j/tb_fasterrcnn_epochs_25_batches_1_tv_ratio_07_seed_2_20240121_154144.pt"
+model_url="https://syncandshare.lrz.de/dl/fiFFtPgZHLw57d39BXHkZd/tb_fasterrcnn_epochs_25_batches_1_tv_ratio_07_seed_2_20240121_154144.pt"
 model_file_name="tb_fasterrcnn_epochs_25_batches_1_tv_ratio_07_seed_2_20240121_154144.pt"
 
 # Set up directory:

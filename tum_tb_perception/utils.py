@@ -62,7 +62,7 @@ def get_bbox_dicts(image_info_dict, gt_labels_list):
 
         bboxes[-1]['class'] = gt_labels_list[label_tensor[i] - 1]
         if not no_confidence_scores:
-            bboxes[-1]['confidence'] = float(score_tensor[i])
+            bboxes[-1]['confidence'] = float(score_tensor[i].detach())
 
     return bboxes
 
