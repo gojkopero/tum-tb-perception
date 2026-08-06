@@ -176,7 +176,7 @@ ros2 launch tum_tb_perception object_detector.launch.py run_on_ros_trigger:=true
 
 Start the slider task solver node:
 ```bash
-ros2 launch tum_tb_perception slider_task_solver.launch
+ros2 launch tum_tb_perception slider_task_solver.launch.py
 ```
 
 Note: the recommended way to run the components is through the launch files, because they ensure the correct configuration of various parameters (config file paths, etc.).
@@ -219,7 +219,7 @@ rviz2 -d src/tum-tb-perception/config/perception.rviz
 To estimate the solution for the slider task, position the camera above the LCD screen (see, for example, the perspective shown on the illustrative image of the screen [above](#example-results)).
 Then, trigger the slider distance estimation by publishing:
 ```bash
-ros2 topic pub --once /tum_tb_perception/silder_solver_trigger std_msgs/msg/Bool "{'data': 'true'}"
+ros2 topic pub --once /tum_tb_perception/slider_solver_trigger std_msgs/msg/Bool "{'data': 'true'}"
 ```
 
 The estimated slider motion distance will be published on the `/tum_tb_perception/slider_solver_result` topic.
@@ -314,38 +314,34 @@ The estimated slider motion distance will be sent over the `udp_output_port` por
 ```
 tum-tb-perception
 │
-├── src
-│   └── tum_tb_perception
-│       ├── __init__.py
-│       ├── image_detection.py
-│       ├── pose_estimation.py
-│       ├── dataset.py
-│       ├── models.py
-│       ├── utils.py
-│       └── visualization.py
+├── tum_tb_perception/           # Core Python library (no ROS dependency)
+│   ├── __init__.py
+│   ├── image_detection.py
+│   ├── pose_estimation.py
+│   ├── dataset.py
+│   ├── models.py
+│   ├── utils.py
+│   └── visualization.py
 │
-├── ros
-│   └── scripts
-│   |   ├── single_cnn_detector_node
-│   |   ├── continuous_cnn_detector_node
-│   |   ├── slider_task_solver_node
-│   |   └── pose_estimator_node
-│   └── launch
-│       ├── object_detector_single.launch
-│       ├── object_detector.launch
-│       ├── slider_task_solver.launch
-│       └── pose_estimator.launch
+├── ros/
+│   ├── tum_tb_perception/       # ROS2 node executables
+│   │   ├── continuous_cnn_detector_node.py
+│   │   ├── pose_estimator_node.py
+│   │   └── slider_task_solver_node.py
+│   └── launch/
+│       ├── object_detector.launch.py
+│       ├── pose_estimator.launch.py
+│       └── slider_task_solver.launch.py
 │
 ├── config/
-│   ├── labels.txt
-│   └── class_colors_taskboard.yaml
+│   ├── labels.txt
+│   ├── class_colors_taskboard.yaml
+│   └── perception.rviz
 │
 ├── models/
-│   └── slider_solver_templates_images
+│   └── slider_solver_templates_images/
 │
-├── msg/
 ├── download_model.sh
-├── setup.py
 ├── CMakeLists.txt
 ├── package.xml
 ├── requirements.txt
@@ -382,11 +378,95 @@ ROS system packages:
 * `tf_transformations`
 * `visualization_msgs`
 
+## Testing the Slider Task Solver
+
+The slider task solver can be tested independently of the robot. It only requires a camera image stream.
+
+### Prerequisites
+
+1. **Build the package:**
+   ```bash
+   cd ~/franka_ws
+   colcon build --packages-select tum_tb_perception
+   source install/setup.bash
+   ```
+
+2. **Start the Realsense camera** (or any camera publishing to the expected image topic):
+   ```bash
+   ros2 launch realsense2_camera rs_launch.py rgb_camera.color_profile:=640x480x15
+   ```
+
+### Step 1: Launch the Slider Solver Node
+
+```bash
+ros2 launch tum_tb_perception slider_task_solver.launch.py
+```
+
+You should see log output indicating templates were loaded successfully:
+```
+[slider_task_solver_node.py] Loading marker templates...
+[slider_task_solver_node.py] Found markers:
+[slider_task_solver_node.py]   - red: 6
+[slider_task_solver_node.py]   - white_center: 6
+[slider_task_solver_node.py] Received first image message
+[slider_task_solver_node.py] Will estimate solution distance on the latest image message at every trigger ROS message...
+```
+
+### Step 2: Position the Camera
+
+Point the camera directly above the taskboard LCD screen so the triangle markers are clearly visible.
+
+### Step 3: Trigger the Solver
+
+In another terminal:
+```bash
+ros2 topic pub --once /tum_tb_perception/slider_solver_trigger std_msgs/msg/Bool "{'data': 'true'}"
+```
+
+### Step 4: Read the Result
+
+Monitor the estimated slider motion distance:
+```bash
+ros2 topic echo /tum_tb_perception/slider_solver_result
+```
+
+You should see a `Float32` value representing the estimated distance to move the slider (in mm).
+
+### Step 5: Visualize in RViz2 (optional)
+
+To see the annotated debug image showing detected markers and the estimated motion arrow:
+```bash
+rviz2
+```
+Add an **Image** display and subscribe to `/tum_tb_perception/slider_solver_images`.
+
+### Adjusting the Task Stage
+
+By default, the solver estimates the distance to move the red marker to the white center marker (stage 1). To switch to stage 2 (red → green):
+```bash
+ros2 launch tum_tb_perception slider_task_solver.launch.py task_stage:=2
+```
+
+### Lowering the Detection Threshold
+
+If the solver fails to detect markers, try lowering the detection score threshold:
+```bash
+ros2 launch tum_tb_perception slider_task_solver.launch.py detection_score_threshold:=0.5
+```
+
+### Continuous Mode (No Trigger Required)
+
+To run the solver continuously on every frame (useful for live debugging):
+```bash
+ros2 launch tum_tb_perception slider_task_solver.launch.py run_on_ros_trigger:=False
+```
+
 ## Future Plans
 
 - [X] Separate core code and ROS interfaces.
 - [X] Implement estimation of slider task solution.
-- [ ] Include dependecy: `tum_tb_perception_msgs`.
+- [X] Port slider task solver to ROS2.
+- [ ] Include dependency: `tum_tb_perception_msgs`.
 - [ ] Include complete code and instructions for training the detection model.
 - [ ] Implement continuous detection + pose estimation (detection may require GPU).
 - [ ] Implement pose estimation in C++ (if pointcloud processing run-time improves).

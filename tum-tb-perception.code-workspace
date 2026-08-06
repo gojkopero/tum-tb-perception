@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../tum-tb-perception-msgs"
+		}
+	]
+}

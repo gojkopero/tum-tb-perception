@@ -182,6 +182,9 @@ class PoseEstimatorNode(Node):
 
         self.object_marker_id = 0
 
+        # Store latest TF transforms for continuous re-publishing:
+        self.latest_tf_transforms = []
+
         self.labels_list = load_labels(self.labels_file_path)
 
     ## ----------------------------------------------------------------------
@@ -370,6 +373,14 @@ class PoseEstimatorNode(Node):
         try:
             while rclpy.ok():
                 rclpy.spin_once(self)
+
+                # Continuously re-publish the latest TF transforms so they
+                # don't expire from the TF tree (required for /tf vs /tf_static):
+                if self.latest_tf_transforms:
+                    now = self.get_clock().now().to_msg()
+                    for tf_msg in self.latest_tf_transforms:
+                        tf_msg.header.stamp = now
+                    self.tf_broadcaster.sendTransform(self.latest_tf_transforms)
 
                 if self.current_detection_msg is not None:
                     self.clear_object_markers()
@@ -586,6 +597,9 @@ class PoseEstimatorNode(Node):
 
                             tb_quaternion = pose_msg.pose.orientation
 
+                            # Build list of all TF transforms to store for continuous re-publishing:
+                            new_tf_transforms = []
+
                             # Broadcast estimated taskboard frame TF:
                             tf_msg = TransformStamped()
                             tf_msg.header = pose_msg.header
@@ -593,22 +607,16 @@ class PoseEstimatorNode(Node):
                             tf_msg.transform.translation = Vector3(**dict(zip(['x', 'y', 'z'], 
                                                                               [pose_msg.pose.position.x, pose_msg.pose.position.y, pose_msg.pose.position.z])))
                             tf_msg.transform.rotation = pose_msg.pose.orientation
-                            self.tf_broadcaster.sendTransform(tf_msg)
+                            new_tf_transforms.append(tf_msg)
 
                             # Re-publish objects list after adding orientations, and broadcast a frame for each:
                             updated_object_list_msg = ObjectList()
 
                             detected_objects_list = [object_msg.label for object_msg in object_list_msg.objects]
 
-                            # Purge undetected objects from TF tree (RViz visualization):
-                            for label in self.labels_list:
-                                if label not in detected_objects_list:
-                                    tf_msg = TransformStamped()
-                                    tf_msg.header.stamp = self.get_clock().now().to_msg()
-                                    tf_msg.header.frame_id = self.current_camera_info_msg.header.frame_id
-                                    tf_msg.header.frame_id = 'non-existent'
-                                    tf_msg.child_frame_id = label + '_frame'
-                                    self.tf_broadcaster.sendTransform(tf_msg)
+                            # Note: undetected objects are simply not included in the
+                            # continuously re-published transform list, so they will
+                            # naturally expire from the TF tree.
 
                             self.object_marker_id = 0
                             for object_msg in object_list_msg.objects:
@@ -625,7 +633,14 @@ class PoseEstimatorNode(Node):
                                                                                    float(object_msg.pose.position.y), 
                                                                                    float(object_msg.pose.position.z)])))
                                 tf_msg.transform.rotation = tb_quaternion
-                                self.tf_broadcaster.sendTransform(tf_msg)
+                                new_tf_transforms.append(tf_msg)
+
+                            # Store transforms for continuous re-publishing and send now:
+                            self.latest_tf_transforms = new_tf_transforms
+                            now = self.get_clock().now().to_msg()
+                            for tf_msg in self.latest_tf_transforms:
+                                tf_msg.header.stamp = now
+                            self.tf_broadcaster.sendTransform(self.latest_tf_transforms)
 
                             self.object_poses_publisher.publish(updated_object_list_msg)
 
