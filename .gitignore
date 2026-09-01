@@ -20,3 +20,4 @@ output_data/
 # Downloaded model artifacts
 models/*.pt
 models/**/*.pt
+.venv/

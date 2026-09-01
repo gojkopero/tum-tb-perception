@@ -1,0 +1,22 @@
+# 3D model points for PnP pose estimation.
+# Coordinates are in the board-local frame with blue_button as origin.
+# Derived from DesignLearnRG_euROBIN/vision/resource/model_data.yaml
+#
+# Board frame convention (from euROBIN):
+#   Z |    / Y
+#     |   /
+#     |  /
+#     | /
+#     |/
+#     o--------------
+#     ^              X
+#   Blue-Button
+
+# Points used for PnP solving (must have both 2D detection and known 3D position):
+PnPPoints:
+  blue_button: [0.0, 0.0, 0.0]
+  red_button:  [0.0, 0.014, 0.0]
+  red_hole:    [0.058, 0.025, 0.0]
+
+# Taskboard surface depth (Z height of board surface in world frame, approx)
+TaskboardDepth: 0.1

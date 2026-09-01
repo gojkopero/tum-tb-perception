@@ -1,0 +1,36 @@
+digraph G {
+"camera_link" -> "camera_depth_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_hand_tcp" -> "camera_link"[label=" Broadcaster: default_authority\nAverage rate: 10.245\nBuffer length: 4.099\nMost recent transform: 1788189526.601703\nOldest transform: 1788189522.502216\n"];
+"camera_depth_frame" -> "camera_depth_optical_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"camera_link" -> "camera_color_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"camera_color_frame" -> "camera_color_optical_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_hand" -> "fr3_leftfinger"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link8" -> "fr3_hand"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_hand" -> "fr3_rightfinger"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link0" -> "fr3_link1"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"base" -> "fr3_link0"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link1" -> "fr3_link2"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link2" -> "fr3_link3"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link3" -> "fr3_link4"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link4" -> "fr3_link5"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link5" -> "fr3_link6"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link6" -> "fr3_link7"[label=" Broadcaster: default_authority\nAverage rate: 15.23\nBuffer length: 4.399\nMost recent transform: 1788189526.59809\nOldest transform: 1788189522.198909\n"];
+"fr3_link7" -> "fr3_link8"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_hand" -> "fr3_hand_tcp"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link0" -> "fr3_link0_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link0" -> "fr3_link0_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link1" -> "fr3_link1_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link1" -> "fr3_link1_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link2" -> "fr3_link2_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link2" -> "fr3_link2_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link3" -> "fr3_link3_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link3" -> "fr3_link3_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link4" -> "fr3_link4_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link4" -> "fr3_link4_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link5" -> "fr3_link5_accelerometer_bottom"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"fr3_link5" -> "fr3_link5_accelerometer_top"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1788189526.6378863"[ shape=plaintext ] ;
+}->"base";
+}

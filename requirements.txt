@@ -15,3 +15,10 @@ setuptools>=69.0.3
 torch>=2.2.0
 torchvision>=0.17.0
 transforms3d>=0.4.2
+# SAM-based pose estimation (sam_pose_estimator_node):
+# Install MobileSAM (preferred, lightweight ~10ms inference):
+#   pip install git+https://github.com/ChaoningZhang/MobileSAM.git
+# Alternative: Meta's full SAM (heavier but more accurate):
+#   pip install segment-anything
+# YOLO+PnP pose estimation (yolo_pnp_pose_estimator_node):
+onnxruntime>=1.16.0

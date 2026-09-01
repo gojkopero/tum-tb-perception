@@ -1,0 +1,47 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/brairlab/prensilia_ws/install/mia_hand_ros2_control/include/**",
+        "/home/brairlab/prensilia_ws/install/mia_hand_driver/include/**",
+        "/home/brairlab/prensilia_ws/install/mia_hand_msgs/include/**",
+        "/home/brairlab/prensilia_ws/install/mia_hand_description/include/**",
+        "/home/brairlab/franka_ros2_ws/install/transmission_interface/include/**",
+        "/home/brairlab/franka_ros2_ws/install/robotiq_driver/include/**",
+        "/home/brairlab/franka_ros2_ws/install/serial/include/**",
+        "/home/brairlab/franka_ros2_ws/install/ros2_control_test_assets/include/**",
+        "/home/brairlab/franka_ros2_ws/install/robotiq_controllers/include/**",
+        "/home/brairlab/franka_ros2_ws/install/mobile_fr3_duo_trajectory_controller/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_gazebo_hardware/include/**",
+        "/home/brairlab/franka_ros2_ws/install/gz_ros2_control/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_robot_state_broadcaster/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_mobile/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_example_controllers/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_semantic_components/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_hardware/include/**",
+        "/home/brairlab/franka_ros2_ws/install/controller_manager/include/**",
+        "/home/brairlab/franka_ros2_ws/install/controller_interface/include/**",
+        "/home/brairlab/franka_ros2_ws/install/hardware_interface/include/**",
+        "/home/brairlab/franka_ros2_ws/install/joint_limits/include/**",
+        "/home/brairlab/franka_ros2_ws/install/realtime_tools/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_spine_examples/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_spine_msgs/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_selfcollision/include/**",
+        "/home/brairlab/franka_ros2_ws/install/franka_msgs/include/**",
+        "/home/brairlab/franka_ros2_ws/install/controller_manager_msgs/include/**",
+        "/opt/ros/jazzy/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ros2",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}

@@ -51,6 +51,8 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   ros/${PROJECT_NAME}/continuous_cnn_detector_node.py
   ros/${PROJECT_NAME}/pose_estimator_node.py
+  ros/${PROJECT_NAME}/sam_pose_estimator_node.py
+  ros/${PROJECT_NAME}/yolo_pnp_pose_estimator_node.py
   ros/${PROJECT_NAME}/slider_task_solver_node.py
   DESTINATION lib/${PROJECT_NAME}
 )

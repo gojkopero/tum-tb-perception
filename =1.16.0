@@ -1,0 +1,16 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting onnxruntime
+  Downloading onnxruntime-1.29.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (5.6 kB)
+Collecting flatbuffers (from onnxruntime)
+  Downloading flatbuffers-25.12.19-py2.py3-none-any.whl.metadata (1.0 kB)
+Requirement already satisfied: numpy>=1.21.6 in /home/brairlab/.local/lib/python3.12/site-packages (from onnxruntime) (1.26.4)
+Requirement already satisfied: packaging in /usr/lib/python3/dist-packages (from onnxruntime) (24.0)
+Collecting protobuf>=4.25.8 (from onnxruntime)
+  Downloading protobuf-7.36.0-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+Downloading onnxruntime-1.29.0-cp312-cp312-manylinux_2_28_x86_64.whl (23.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 23.1/23.1 MB 31.8 MB/s eta 0:00:00
+Downloading protobuf-7.36.0-cp310-abi3-manylinux2014_x86_64.whl (340 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 340.4/340.4 kB 15.8 MB/s eta 0:00:00
+Downloading flatbuffers-25.12.19-py2.py3-none-any.whl (26 kB)
+Installing collected packages: flatbuffers, protobuf, onnxruntime
+Successfully installed flatbuffers-25.12.19 onnxruntime-1.29.0 protobuf-7.36.0

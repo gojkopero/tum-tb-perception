@@ -1,0 +1,13 @@
+# SAM-specific dependencies for sam_pose_estimator_node.
+# Install into the package venv: pip install -r requirements_sam.txt
+#
+# Note: torch, torchvision, numpy, scipy, scikit-learn, opencv-python,
+# and all ROS 2 packages are inherited from the system via
+# --system-site-packages and should NOT be listed here.
+
+# MobileSAM (preferred — lightweight, ~10ms inference on GPU):
+timm
+git+https://github.com/ChaoningZhang/MobileSAM.git
+
+# Alternative: Meta's full SAM (heavier but more accurate):
+#   segment-anything
