@@ -52,6 +52,11 @@ def generate_launch_description():
             description="CameraInfo input topic",
         ),
         DeclareLaunchArgument(
+            "pointcloud_topic",
+            default_value="/camera/camera/depth/color/points",
+            description="PointCloud2 input topic (for exact Z heights)",
+        ),
+        DeclareLaunchArgument(
             "object_poses_pub_topic",
             default_value="/tum_tb_perception/object_poses",
             description="ObjectList poses output topic",
@@ -114,6 +119,7 @@ def generate_launch_description():
             {"model_points_yaml": LaunchConfiguration("model_points_yaml")},
             {"image_topic": LaunchConfiguration("image_topic")},
             {"camera_info_topic": LaunchConfiguration("camera_info_topic")},
+            {"pointcloud_topic": LaunchConfiguration("pointcloud_topic")},
             {
                 "object_poses_pub_topic": LaunchConfiguration(
                     "object_poses_pub_topic"
