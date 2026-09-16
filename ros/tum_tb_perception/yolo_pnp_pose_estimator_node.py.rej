@@ -1,0 +1,24 @@
+--- yolo_pnp_pose_estimator_node.py
++++ yolo_pnp_pose_estimator_node.py
+@@ -138,13 +139,18 @@
+         self.debug = self.get_parameter("debug").value
+ 
+         # ---- Subscribers ------------------------------------------------
++        qos_profile = QoSProfile(
++            reliability=ReliabilityPolicy.BEST_EFFORT,
++            history=HistoryPolicy.KEEP_LAST,
++            depth=1
++        )
+         self.img_sub = self.create_subscription(
+-            Image, self.image_topic, self._img_cb, 10
++            Image, self.image_topic, self._img_cb, qos_profile
+         )
+         self.cam_sub = self.create_subscription(
+-            CameraInfo, self.camera_info_topic, self._cam_cb, 10
++            CameraInfo, self.camera_info_topic, self._cam_cb, qos_profile
+         )
+         self.pc_sub = self.create_subscription(
+-            PointCloud2, self.pointcloud_topic, self._pc_cb, 10
++            PointCloud2, self.pointcloud_topic, self._pc_cb, qos_profile
+         )
+ 

@@ -216,12 +216,22 @@ rviz2 -d src/tum-tb-perception/config/perception.rviz
 
 <!-- Add custom ROS message specifications -->
 
-To estimate the solution for the slider task, position the camera above the LCD screen (see, for example, the perspective shown on the illustrative image of the screen [above](#example-results)).
-Then, trigger the slider distance estimation by publishing:
-```bash
-ros2 topic pub --once /tum_tb_perception/slider_solver_trigger std_msgs/msg/Bool "{'data': 'true'}"
-```
+### Triggering Perception
 
+Both the main pose estimator and the slider task solver use standard ROS 2 `std_srvs/srv/Trigger` services to initiate computation on-demand.
+
+**1. Main Pose Estimation**
+Trigger the YOLO + PnP (or Pointcloud) pose estimator to locate the taskboard and its components:
+```bash
+ros2 service call /tum_tb_perception/rerun_pose_estimation std_srvs/srv/Trigger
+```
+The estimated transforms will be broadcasted to `tf2` (e.g., `base -> taskboard_frame`, `base -> blue_button_frame`, etc.).
+
+**2. Slider Task Estimation**
+To estimate the solution for the slider task, position the camera above the LCD screen and trigger the solver:
+```bash
+ros2 service call /tum_tb_perception/slider_solver_trigger_srv std_srvs/srv/Trigger
+```
 The estimated slider motion distance will be published on the `/tum_tb_perception/slider_solver_result` topic.
 
 ### Alternative Triggering and Data Retrieval: UDP Messages
@@ -420,7 +430,7 @@ Point the camera directly above the taskboard LCD screen so the triangle markers
 
 In another terminal:
 ```bash
-ros2 topic pub --once /tum_tb_perception/slider_solver_trigger std_msgs/msg/Bool "{'data': 'true'}"
+ros2 service call /tum_tb_perception/slider_solver_trigger_srv std_srvs/srv/Trigger
 ```
 
 ### Step 4: Read the Result

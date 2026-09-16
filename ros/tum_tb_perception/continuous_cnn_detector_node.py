@@ -27,6 +27,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from launch_ros.substitutions import FindPackageShare
 
 from std_msgs.msg import Bool
+from std_srvs.srv import Trigger
 from sensor_msgs.msg import Image
 from tum_tb_perception_msgs.msg import BoundingBox, BoundingBoxList
 
@@ -64,7 +65,7 @@ class CNNDetectorNode(Node):
         self.declare_parameter('udp_ip', 'localhost')
         self.declare_parameter('udp_trigger_port', 5000)
         self.declare_parameter('image_topic', '/camera/color/image_raw')
-        self.declare_parameter('trigger_topic', '/tum_tb_perception/detector_trigger')
+        self.declare_parameter('trigger_service', '/tum_tb_perception/rerun_pose_estimation')
         self.declare_parameter('image_pub_topic', '/tum_tb_perception/detection_images')
         self.declare_parameter('input_image_pub_topic', '/tum_tb_perception/input_images')
         self.declare_parameter('detection_pub_topic', '/tum_tb_perception/detection_result')
@@ -84,7 +85,7 @@ class CNNDetectorNode(Node):
         self.udp_ip = self.get_parameter('udp_ip').value
         self.udp_trigger_port = self.get_parameter('udp_trigger_port').value
         self.image_topic = self.get_parameter('image_topic').value
-        self.trigger_topic = self.get_parameter('trigger_topic').value
+        self.trigger_service = self.get_parameter('trigger_service').value
         self.image_pub_topic = self.get_parameter('image_pub_topic').value
         self.input_image_pub_topic = self.get_parameter('input_image_pub_topic').value
         self.detection_pub_topic = self.get_parameter('detection_pub_topic').value

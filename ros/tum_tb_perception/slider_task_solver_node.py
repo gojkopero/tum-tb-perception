@@ -234,7 +234,7 @@ class SliderTaskSolverNode(Node):
         self.udp_trigger_port = self.get_parameter('udp_trigger_port').value
         self.udp_output_port = self.get_parameter('udp_output_port').value
         self.image_topic = self.get_parameter('image_topic').value
-        self.trigger_topic = self.get_parameter('trigger_topic').value
+        self.trigger_service = self.get_parameter('trigger_service').value
         self.image_pub_topic = self.get_parameter('image_pub_topic').value
         self.input_image_pub_topic = self.get_parameter(
             'input_image_pub_topic').value
