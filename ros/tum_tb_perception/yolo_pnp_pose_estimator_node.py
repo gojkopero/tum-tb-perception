@@ -38,14 +38,16 @@ import numpy as np
 
 from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from launch_ros.substitutions import FindPackageShare
 
 from geometry_msgs.msg import (
     Point, Pose, Quaternion, Vector3, TransformStamped,
 )
-from sensor_msgs.msg import Image, CameraInfo, PointCloud2
+from sensor_msgs.msg import Image, CameraInfo
 from visualization_msgs.msg import Marker, MarkerArray
-import sensor_msgs_py.point_cloud2 as pc2
+from std_srvs.srv import Trigger
 
 # For the ObjectList output (compatibility with existing system):
 from tum_tb_perception_msgs.msg import ObjectList, Object
@@ -57,7 +59,6 @@ from tum_tb_perception.pnp_pose_estimator import (
     PNP_MODEL_POINTS,
     EUROBIN_TO_TUM_LABEL,
 )
-from tum_tb_perception.pose_estimation import TaskboardPoseEstimator
 
 # Fix occasional Qt visualisation issue on Ubuntu 22.04+:
 if "QT_QPA_PLATFORM_PLUGIN_PATH" in os.environ:
@@ -91,9 +92,6 @@ class YoloPnPPoseEstimatorNode(Node):
             "camera_info_topic", "/camera/camera/color/camera_info"
         )
         self.declare_parameter(
-            "pointcloud_topic", "/camera/camera/depth/color/points"
-        )
-        self.declare_parameter(
             "object_poses_pub_topic", "/tum_tb_perception/object_poses"
         )
         self.declare_parameter(
@@ -110,6 +108,7 @@ class YoloPnPPoseEstimatorNode(Node):
         self.declare_parameter("num_samples", 10)
         self.declare_parameter("rate", 10)
         self.declare_parameter("debug", False)
+        self.declare_parameter("trigger_service_name", "rerun_pose_estimation")
 
         # Read parameters:
         self.model_path = self.get_parameter("model_path").value
@@ -117,7 +116,6 @@ class YoloPnPPoseEstimatorNode(Node):
         self.model_points_yaml = self.get_parameter("model_points_yaml").value
         self.image_topic = self.get_parameter("image_topic").value
         self.camera_info_topic = self.get_parameter("camera_info_topic").value
-        self.pointcloud_topic = self.get_parameter("pointcloud_topic").value
         self.object_poses_pub_topic = self.get_parameter(
             "object_poses_pub_topic"
         ).value
@@ -138,7 +136,7 @@ class YoloPnPPoseEstimatorNode(Node):
         self.num_samples = self.get_parameter("num_samples").value
         self.rate = self.get_parameter("rate").value
         self.debug = self.get_parameter("debug").value
-        self.assume_flat_table = True
+        self.trigger_service_name = self.get_parameter("trigger_service_name").value
 
         # ---- Subscribers ------------------------------------------------
         self.img_sub = self.create_subscription(
@@ -146,9 +144,6 @@ class YoloPnPPoseEstimatorNode(Node):
         )
         self.cam_sub = self.create_subscription(
             CameraInfo, self.camera_info_topic, self._cam_cb, 10
-        )
-        self.pc_sub = self.create_subscription(
-            PointCloud2, self.pointcloud_topic, self._pc_cb, 10
         )
 
         # ---- Publishers -------------------------------------------------
@@ -162,10 +157,14 @@ class YoloPnPPoseEstimatorNode(Node):
             Image, self.detection_image_pub_topic, 10
         )
 
+        # ---- Services ---------------------------------------------------
+        self.trigger_srv = self.create_service(
+            Trigger, self.trigger_service_name, self._trigger_cb
+        )
+
         # ---- Message buffers --------------------------------------------
         self.current_image_msg = None
         self.current_camera_info_msg = None
-        self.current_pc2_msg = None
 
         # ---- Initialise subsystems --------------------------------------
         self._initialise()
@@ -198,11 +197,6 @@ class YoloPnPPoseEstimatorNode(Node):
             iou_threshold=self.iou_threshold,
         )
         self.get_logger().info("YOLO model loaded and warmed up.")
-        
-        # Position estimator (from pointcloud):
-        self.position_estimator = TaskboardPoseEstimator(
-            class_colors_dict={}
-        )
 
         # PnP estimator (will be initialised once camera info is available):
         self.pnp = None
@@ -234,14 +228,24 @@ class YoloPnPPoseEstimatorNode(Node):
     # Callbacks
     # ------------------------------------------------------------------
 
+    def _trigger_cb(self, request, response):
+        self.get_logger().info("Trigger received. Resetting pose estimation...")
+        self.latest_tf_transforms = []
+        self.latest_obj_list = None
+        self.latest_marker_arr = None
+        for buf in self.keypoint_buffers.values():
+            buf.clear()
+        for buf in self.secondary_buffers.values():
+            buf.clear()
+        response.success = True
+        response.message = "Pose estimation reset."
+        return response
+
     def _img_cb(self, msg):
         self.current_image_msg = msg
 
     def _cam_cb(self, msg):
         self.current_camera_info_msg = msg
-        
-    def _pc_cb(self, msg):
-        self.current_pc2_msg = msg
 
     # ------------------------------------------------------------------
     # Camera helpers
@@ -377,6 +381,7 @@ class YoloPnPPoseEstimatorNode(Node):
             )
         )
         pt_msg.header.frame_id = camera_frame_id
+        pt_msg.header.stamp = rclpy.time.Time().to_msg()
 
         try:
             pt_transformed = self.tf_buffer.transform(
@@ -432,6 +437,7 @@ class YoloPnPPoseEstimatorNode(Node):
             )
         )
         pose_msg.header.frame_id = camera_frame_id
+        pose_msg.header.stamp = rclpy.time.Time().to_msg()
 
         try:
             pose_base = self.tf_buffer.transform(
@@ -486,23 +492,16 @@ class YoloPnPPoseEstimatorNode(Node):
                 if (
                     self.current_image_msg is None
                     or self.current_camera_info_msg is None
-                    or self.current_pc2_msg is None
                 ):
                     time.sleep(1.0 / self.rate)
                     continue
 
-                # Initialise PnP estimator and position estimator on first camera info:
+                # Initialise PnP estimator on first camera info:
                 if self.pnp is None:
                     cam_matrix = self._build_camera_matrix()
                     self.pnp = PnPPoseEstimator(cam_matrix)
-                    self.position_estimator.load_camera_params({
-                        'f_x': cam_matrix[0, 0],
-                        'f_y': cam_matrix[1, 1],
-                        'c_x': cam_matrix[0, 2],
-                        'c_y': cam_matrix[1, 2],
-                    })
                     self.get_logger().info(
-                        "PnP and Position estimators initialised with camera intrinsics."
+                        "PnP estimator initialised with camera intrinsics."
                     )
 
                 # ---- YOLO detection ------------------------------------
@@ -566,69 +565,62 @@ class YoloPnPPoseEstimatorNode(Node):
                         f"tvec={tvec.flatten()}"
                     )
 
-                # ---- Compute component positions in camera frame using PointCloud -------
-                camera_frame_id = self.current_camera_info_msg.header.frame_id
-                
-                # Format YOLO detections for TaskboardPoseEstimator
-                bbox_dict_list = []
-                for d in detections:
-                    x, y, w, h = d["bbox"]
-                    bbox_dict_list.append({
-                        "class": EUROBIN_TO_TUM_LABEL.get(d["class_name"], d["class_name"]),
-                        "xmin": x,
-                        "ymin": y,
-                        "xmax": x + w,
-                        "ymax": y + h,
-                        "confidence": d["confidence"]
-                    })
-                
-                pc_points = pc2.read_points_list(self.current_pc2_msg, skip_nans=True, field_names=("x", "y", "z"))
-                object_positions_dict, _, _ = self.position_estimator.estimate_object_positions(
-                    bbox_dict_list, pc_points, cropped_pc_label=None, debug=False
+                # ---- Compute component positions in camera frame -------
+                camera_frame_id = (
+                    self.current_camera_info_msg.header.frame_id
                 )
-                
-                # The PnP origin is the blue button, so we treat it as the taskboard root
-                if "blue_button" in object_positions_dict:
-                    object_positions_dict["taskboard"] = object_positions_dict["blue_button"]
-                else:
-                    self.get_logger().error("Blue button not found in pointcloud, cannot establish taskboard root.")
-                    time.sleep(1.0 / self.rate)
-                    continue
+
+                # Primary components (from model points):
+                component_positions_board = {}
+                for name, model_pt in PNP_MODEL_POINTS.items():
+                    tum_label = EUROBIN_TO_TUM_LABEL.get(name, name)
+                    component_positions_board[tum_label] = model_pt.copy()
+
+                # Secondary components (project YOLO detections onto board plane):
+                avg_secondary = self._get_averaged_secondary()
+                for tum_label, pixel_uv in avg_secondary.items():
+                    pt_cam, pt_board = self.pnp.project_point_to_board_plane(
+                        pixel_uv, rvec, tvec
+                    )
+                    if pt_board is not None:
+                        component_positions_board[tum_label] = pt_board
+
+                # Taskboard frame is at blue_button (the PnP origin):
+                component_positions_board["taskboard"] = np.array([0.0, 0.0, 0.0])
 
                 # ---- Transform to robot base frame ---------------------
-                # 1. PnP Orientation
                 board_pos_base, board_quat_base = self._transform_pose_to_base(
                     rvec, tvec, camera_frame_id
                 )
-                
+
                 if board_pos_base is None:
-                    self.get_logger().error("Could not transform board pose to base frame.")
+                    self.get_logger().error(
+                        "Could not transform board pose to base frame."
+                    )
                     time.sleep(1.0 / self.rate)
                     continue
+                    
+                # Flatten orientation (assume table is perfectly flat):
+                import tf_transformations
+                roll, pitch, yaw = tf_transformations.euler_from_quaternion(board_quat_base)
+                # The board is usually upside down in the robot frame (Z points down into table) 
+                # or right-side up. We snap roll/pitch to exactly 180 or 0.
+                import math
+                if abs(roll) > math.pi / 2:
+                    roll = math.pi  # or -math.pi
+                else:
+                    roll = 0.0
+                pitch = 0.0
+                flat_quat = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+                board_quat_base = flat_quat / np.linalg.norm(flat_quat)
 
-                # Optionally flatten the orientation so XY plane aligns exactly with reference frame
-                if getattr(self, 'assume_flat_table', True):
-                    import tf_transformations
-                    import math
-                    
-                    roll, pitch, yaw = tf_transformations.euler_from_quaternion(board_quat_base)
-                    
-                    # Snap roll and pitch to 0 or PI to flatten against the reference XY plane
-                    def snap_angle(angle):
-                        angle = (angle + math.pi) % (2 * math.pi) - math.pi
-                        return 0.0 if abs(angle) < math.pi / 2.0 else math.pi
-                        
-                    flat_quat = tf_transformations.quaternion_from_euler(snap_angle(roll), snap_angle(pitch), yaw)
-                    board_quat_base = np.array(flat_quat)
+                # Compute base positions using flattened orientation (guarantees identical Z height):
+                flat_R = tf_transformations.quaternion_matrix(board_quat_base)[:3, :3]
                 
-                # 2. PointCloud Positions
                 component_positions_base = {}
-                for label, pt_cam in object_positions_dict.items():
-                    pt_base = self._transform_point_to_base(
-                        pt_cam, camera_frame_id
-                    )
-                    if pt_base is not None:
-                        component_positions_base[label] = pt_base
+                for label, pt_board in component_positions_board.items():
+                    pt_base = board_pos_base + (flat_R @ pt_board)
+                    component_positions_base[label] = pt_base
 
                 # ---- Build TF transforms and publish -------------------
                 self._clear_markers()

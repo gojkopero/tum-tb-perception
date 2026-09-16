@@ -106,6 +106,11 @@ def generate_launch_description():
             default_value="False",
             description="Enable debug logging",
         ),
+        DeclareLaunchArgument(
+            "trigger_service_name",
+            default_value="rerun_pose_estimation",
+            description="Service name to trigger pose estimation rerun",
+        ),
     ]
 
     node = Node(
@@ -154,6 +159,7 @@ def generate_launch_description():
             {"num_samples": LaunchConfiguration("num_samples")},
             {"rate": LaunchConfiguration("rate")},
             {"debug": LaunchConfiguration("debug")},
+            {"trigger_service_name": LaunchConfiguration("trigger_service_name")},
         ],
     )
 
