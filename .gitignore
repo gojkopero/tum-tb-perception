@@ -21,3 +21,5 @@ output_data/
 models/*.pt
 models/**/*.pt
 .venv/
+
+.vscode/
